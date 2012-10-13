@@ -1,7 +1,9 @@
-package math;
+package math.util;
 
 import java.awt.Point;
 import java.awt.geom.Point2D;
+
+import math.geometry.Vector;
 
 public class PMath {
 	

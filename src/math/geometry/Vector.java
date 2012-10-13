@@ -1,4 +1,4 @@
-package math;
+package math.geometry;
 
 import java.awt.geom.Point2D;
 
@@ -48,5 +48,9 @@ public class Vector {
 	
 	public static Vector sum(Vector one, Vector two){
 		return new Vector(one.x+two.x, one.y+two.y);
+	}
+	
+	public static Vector sub(Vector one, Vector two){
+		return new Vector(two.x-one.x, two.y-one.y);
 	}
 }

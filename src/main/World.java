@@ -9,7 +9,7 @@ import entities.Entity;
 
 import math.Collision;
 import math.CollisionResult;
-import math.Vector;
+import math.geometry.Vector;
 
 import graphic.RenderParameters;
 /**
@@ -83,16 +83,25 @@ public class World extends Thread{
 		}
 	}
 	
+	/*TODO what should happen
+	 *	velocity should be updated
+	 *	Collision detection should occur, be taken care of (including velocity & such)
+	 *	positions should be updated
+	 */
 	public void tick(){
 		synchronized(entities){
+			//TODO get rid of this prevs/news system. it should be all based on the collision results
 			Float[] prevs = new Float[entities.size()];
 			Float[] news = new Float[entities.size()];
 			for(int e = 0; e < entities.size(); e++){
 				prevs[e] = (Float)entities.get(e).location.clone();
 				news[e] = entities.get(e).location;
-				entities.get(e).velocity = new Vector(entities.get(e).velocity.x, entities.get(e).velocity.y+3);
-				entities.get(e).tick();
+				if(!entities.get(e).staticEntity){
+					entities.get(e).velocity.y += 3;
+				}
 			}
+			/**/
+			//iterates through the entities testing collisions
 			for(int i = 0; i < entities.size()-1; i++){
 				for(int j = i+1; j < entities.size(); j++){
 					Entity one = entities.get(i);
@@ -102,6 +111,8 @@ public class World extends Thread{
 						if(temp.willIntersect){
 							Float p = one.location;
 							Float q = two.location;
+							//TODO do this based on math
+							//the ratio should be minTrans * (cur.mass/(m1+m2))
 							if(one.staticEntity){
 								q.setLocation(-temp.minimumTranslation.x + q.x, -temp.minimumTranslation.y + q.y);
 							}else if(two.staticEntity){
@@ -114,39 +125,15 @@ public class World extends Thread{
 					}
 				}
 			}
-			for(int i = 0; i < news.length; i++){
-				entities.get(i).velocity = new Vector(news[i].x-prevs[i].x, news[i].y-prevs[i].y);
-			}
-		}
-	}
-	
-	/*
-	 * public void tick(){
-		synchronized(entities){
-			for(WorldEntity e: entities){
-				e.velocity = new Vector(e.velocity.x, e.velocity.y+3);
+			for(Entity e: entities){
 				e.tick();
-				if(e.location.y > 450){
-					e.location.setLocation(e.location.x, 450);
-					e.velocity = new Vector(e.velocity.x, -(2*e.velocity.y/3));
-				}
 			}
-			for(int i = 0; i < entities.size()-1; i++){
-				for(int j = i+1; j < entities.size(); j++){
-					CollisionResult temp = Collision.testCollision(entities.get(i), entities.get(j));
-					if(temp.willIntersect){
-						Float p = entities.get(i).location;
-						Float q = entities.get(j).location;
-						p.setLocation(temp.minimumTranslation.x/2 + p.x, temp.minimumTranslation.y/2 + p.y);
-						q.setLocation(-temp.minimumTranslation.x/2 + q.x, -temp.minimumTranslation.y/2 + q.y);
-						entities.get(i).velocity = Vector.vectorFromSet(p, pPrev);
-						entities.get(j).velocity = Vector.vectorFromSet(q, qPrev);
-					}
-				}
+			for(int i = 0; i < news.length; i++){
+				if(!entities.get(i).staticEntity)
+					entities.get(i).velocity = new Vector(news[i].x-prevs[i].x, news[i].y-prevs[i].y);
 			}
 		}
 	}
-	 */
 	
 	public void draw(Graphics g, int x, int y){
 		if(render != null){

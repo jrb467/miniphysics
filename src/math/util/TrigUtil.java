@@ -1,4 +1,4 @@
-package math;
+package math.util;
 
 public class TrigUtil {
 	private static final float[] SINES = {0.0f,0.017452406f,0.034899496f,0.052335955f,0.06975647f,0.087155744f,0.104528464f,0.12186934f,0.1391731f,0.15643446f,

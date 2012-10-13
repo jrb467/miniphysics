@@ -1,6 +1,8 @@
-package math;
+package math.geometry;
 
 import java.awt.geom.Point2D;
+
+import math.util.PMath;
 
 public class LineSegment {
 	public final Point2D.Float p1;

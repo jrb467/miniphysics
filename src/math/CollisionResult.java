@@ -1,5 +1,7 @@
 package math;
 
+import math.geometry.Vector;
+
 public class CollisionResult {
 	public boolean willIntersect;
 	public Vector minimumTranslation;

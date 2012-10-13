@@ -14,6 +14,7 @@ import javax.swing.JFrame;
 import javax.swing.JPanel;
 
 import entities.Entity;
+import entities.Entity.EntityData;
 import graphic.RenderParameters;
 
 import main.World;
@@ -50,7 +51,10 @@ public class Tester extends JFrame {
 					if(drawPoints.size() >= 3){
 						Float[] temp = new Float[0];
 						temp = drawPoints.toArray(temp);
-						world.addEntity(new Entity(new Float(0,0), isStatic, temp));
+						EntityData ent = new EntityData();
+						ent.staticEntity = isStatic;
+						ent.verticies = temp;
+						world.addEntity(new Entity(ent));
 						drawPoints.clear();
 					}
 				}else{
