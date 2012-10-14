@@ -12,9 +12,9 @@ import math.util.PMath;
 public class Entity {
 	
 	public static class EntityData {
-		public float mass = 0;
-		public float hardness = 0;
-		public float friction = 0;
+		public float mass = 1;
+		public float bounce = 0;
+		public float friction = .5f;
 		public boolean staticEntity = false;
 		public byte id = 0;
 		public Float location = new Float(0,0);
@@ -22,7 +22,7 @@ public class Entity {
 	}
 
 	public final float mass;
-	public final float hardness;
+	public final float bounce;
 	public final float friction;
 	public final Float[] verticies; //in location to the object origin (0, 0);
 	public Float location;
@@ -33,20 +33,29 @@ public class Entity {
 	public byte id;
 	public final static byte DEFAULT_ID = 0;
 	
+	private boolean ticked = false;
+	
 	public Entity(EntityData data){
 		location = data.location;
 		verticies = data.verticies;
 		mass = data.mass;
-		hardness = data.hardness;
+		bounce = data.bounce;
 		friction = data.friction;
 		staticEntity = data.staticEntity;
 		id = data.id;
 	}
 	
 	public void tick(){
-		if(!this.staticEntity){
-			location.setLocation(location.x+velocity.x, location.y+velocity.y);
+		if(!ticked){
+			if(!this.staticEntity){
+				location.setLocation(location.x+velocity.x, location.y+velocity.y);
+			}
+			ticked = true;
 		}
+	}
+	
+	public void resetTick(){
+		ticked = false;
 	}
 	
 	public void draw(Graphics g, RenderParameters r){

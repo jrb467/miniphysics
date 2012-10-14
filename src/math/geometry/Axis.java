@@ -4,6 +4,7 @@ import java.awt.geom.Point2D;
 
 public class Axis {
 	public final float slope;
+	private Vector unitVector;
 	
 	public Axis(float slope){
 		this.slope = slope;
@@ -26,9 +27,12 @@ public class Axis {
 	}
 	
 	public Vector unitVector(){
-		float x = (float)(1/(Math.sqrt(slope*slope+1)));
-		float y = slope*x;
-		return new Vector(x,y);
+		if(unitVector == null){
+			float x = (float)(1/(Math.sqrt(slope*slope+1)));
+			float y = slope*x;
+			unitVector = new Vector(x, y);
+		}
+		return unitVector;
 	}
 	
 	public Axis perpindict(){

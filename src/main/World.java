@@ -109,24 +109,21 @@ public class World extends Thread{
 					if(!(one.staticEntity && two.staticEntity)){
 						CollisionResult temp = Collision.testCollision(one, two);
 						if(temp.willIntersect){
-							Float p = one.location;
-							Float q = two.location;
-							//TODO do this based on math
-							//the ratio should be minTrans * (cur.mass/(m1+m2))
-							if(one.staticEntity){
-								q.setLocation(-temp.minimumTranslation.x + q.x, -temp.minimumTranslation.y + q.y);
-							}else if(two.staticEntity){
-								p.setLocation(temp.minimumTranslation.x + p.x, temp.minimumTranslation.y + p.y);
-							}else{
-								p.setLocation(temp.minimumTranslation.x/2 + p.x, temp.minimumTranslation.y/2 + p.y);
-								q.setLocation(-temp.minimumTranslation.x/2 + q.x, -temp.minimumTranslation.y/2 + q.y);
-							}
+							one.location.x += temp.entityOneTranslation.x;
+							one.location.y += temp.entityOneTranslation.y;
+							two.location.x += temp.entityTwoTranslation.x;
+							two.location.y += temp.entityTwoTranslation.y;
+							one.tick();
+							two.tick();
+							one.velocity = temp.entityOneVelocity;
+							two.velocity = temp.entityTwoVelocity;
 						}
 					}
 				}
 			}
 			for(Entity e: entities){
 				e.tick();
+				e.resetTick();
 			}
 			for(int i = 0; i < news.length; i++){
 				if(!entities.get(i).staticEntity)

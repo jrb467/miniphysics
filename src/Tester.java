@@ -24,6 +24,7 @@ public class Tester extends JFrame {
 	private JPanel renderPane;
 	private World world;
 	private ArrayList<Float> drawPoints = new ArrayList<Float>();
+	private float mass = 1f;
 	private boolean isStatic = true;
 	private Image buffer;
 	private Graphics bufGraphics;
@@ -54,6 +55,7 @@ public class Tester extends JFrame {
 						EntityData ent = new EntityData();
 						ent.staticEntity = isStatic;
 						ent.verticies = temp;
+						ent.mass = mass;
 						world.addEntity(new Entity(ent));
 						drawPoints.clear();
 					}
@@ -72,6 +74,10 @@ public class Tester extends JFrame {
 					System.exit(0);
 				}else if(e.getKeyCode() == KeyEvent.VK_T){
 					isStatic = !isStatic;
+				}else if(e.getKeyCode() == KeyEvent.VK_UP){
+					mass++;
+				}else if(e.getKeyCode() == KeyEvent.VK_DOWN){
+					mass--;
 				}
 			}
 		});
@@ -104,6 +110,8 @@ public class Tester extends JFrame {
 							bufGraphics.setColor(Color.red);
 							bufGraphics.drawString("Static Draw Off", 100, 100);
 						}
+						bufGraphics.setColor(Color.black);
+						bufGraphics.drawString("Mass:  "+mass, 100, 150);
 						renderPane.getGraphics().drawImage(buffer, 0, 0, null);
 						Thread.sleep(10);
 					} catch (InterruptedException e) {}

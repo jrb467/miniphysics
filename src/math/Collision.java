@@ -44,25 +44,18 @@ public class Collision {
 		Float[] set1 = one.verticies;
 		Float[] set2 = two.verticies;
 		Axis translationAxis = new Axis(1);
+		//NOTE: this is a Point2D.Float because the second float is only an indicator which side
+		//each entity was on during the collision
 		Float minimumInterval = new Float(-java.lang.Float.MAX_VALUE, 0);
 		Vector relativeVelocity = Vector.sub(two.velocity, one.velocity);
-		Axis currentAxis;
+		Axis currentAxis = null;
 		Float currentInterval;
 		Float proj1;
 		Float proj2;
 		//Begin to loop through every side of the polygons
 		//TODO possibly change to iterate through a set of lineSegments return by the entities themselves
 		for(int i = 0; i < set1.length+set2.length; i++){
-			//Test which two points should be included in creating the axis based on 'i'
-			if(i < set1.length-1){
-				currentAxis = Axis.axisFromPoints(set1[i], set1[i+1]).perpindict();
-			}else if(i == set1.length-1){
-				currentAxis = Axis.axisFromPoints(set1[set1.length-1], set1[0]).perpindict();
-			}else if(i == set1.length+set2.length-1){
-				currentAxis = Axis.axisFromPoints(set2[set2.length-1], set2[0]).perpindict();
-			}else{
-				currentAxis = Axis.axisFromPoints(set2[i-set1.length], set2[i-set1.length+1]).perpindict();
-			}
+			currentAxis = createCurrentAxis(set1, set2, i);
 			//Project the entities, taking into account relative velocity
 			proj1 = projectEntity(currentAxis, one, relativeVelocity);
 			proj2 = projectEntity(currentAxis, two, new Vector(0,0));
@@ -70,8 +63,6 @@ public class Collision {
 			currentInterval = intervalDistance(proj1, proj2);
 			//if they don't overlap on this axis, they aren't colliding, so return false and break
 			if(currentInterval.x > 0){
-				result.willIntersect = false;
-				result.minimumTranslation = new Vector(0,0);
 				return result;
 			}
 			//If its less than the minimum translation, store as minimum translation and take note of the translation axis
@@ -80,12 +71,29 @@ public class Collision {
 				translationAxis = currentAxis;
 			}
 		} //End loop
-		
-		//APPARANTLY, if the maximum of the 
-		if(minimumInterval.y == 0){
-			result.minimumTranslation = Vector.vectorFromAxis(translationAxis, minimumInterval.x);
+		if(minimumInterval.y != 0){
+			minimumInterval.x = -minimumInterval.x;
+		}
+		if(one.staticEntity){
+			result.entityTwoTranslation = Vector.vectorFromAxis(translationAxis, -minimumInterval.x);
+			result.entityTwoVelocity = Vector.vectorFromAxis(translationAxis.perpindict(), -Vector.dotProduct(translationAxis.perpindict().unitVector(), two.velocity));
+		}else if(two.staticEntity){
+			result.entityOneTranslation = Vector.vectorFromAxis(translationAxis, minimumInterval.x);
+			//TODO note: should the end be a negative?
+			result.entityOneVelocity = Vector.vectorFromAxis(translationAxis.perpindict(), Vector.dotProduct(translationAxis.perpindict().unitVector(), one.velocity));
 		}else{
-			result.minimumTranslation = Vector.vectorFromAxis(translationAxis, -minimumInterval.x);
+			//calculates relative masses
+			float r1 = two.mass/(one.mass+two.mass+.00001f);
+			float r2 = one.mass/(one.mass+two.mass+.00001f);
+			//calculates how much each would move based on relative mass
+			float t1 = minimumInterval.x * r1;
+			float t2 = -minimumInterval.x * r2;
+			result.entityOneTranslation = Vector.vectorFromAxis(translationAxis, t1);
+			result.entityTwoTranslation = Vector.vectorFromAxis(translationAxis, t2);
+			//TODO add in velocity code
+			result.entityOneVelocity = Vector.vectorFromAxis(translationAxis, Vector.dotProduct(translationAxis.unitVector(), Vector.multiplyByScalar(one.velocity,r2)));
+			//TODO should this be negative?
+			result.entityTwoVelocity = Vector.vectorFromAxis(translationAxis, Vector.dotProduct(translationAxis.unitVector(), Vector.multiplyByScalar(two.velocity,r1)));
 		}
 		result.willIntersect = true;
 		return result;
@@ -98,22 +106,39 @@ public class Collision {
 		return new Float(a.x-b.y, 1);
 	}
 	
+	//Creates the current projection axis from an index and a set of points
+	private static Axis createCurrentAxis(Float[] set1, Float[] set2, int index){
+		Axis current;
+		if(index < set1.length-1){
+			current = Axis.axisFromPoints(set1[index], set1[index+1]).perpindict();
+		}else if(index == set1.length-1){
+			current = Axis.axisFromPoints(set1[set1.length-1], set1[0]).perpindict();
+		}else if(index == set1.length+set2.length-1){
+			current = Axis.axisFromPoints(set2[set2.length-1], set2[0]).perpindict();
+		}else{
+			current = Axis.axisFromPoints(set2[index-set1.length], set2[index-set1.length+1]).perpindict();
+		}
+		return current;
+	}
+	
 	/*
 	 * Gives the projection of an entity (+relative velocity) over the vector defining one of it's sides.
 	 * Returns it as a Point2D.Float in the form (min,max)
 	 */
 	public static Float projectEntity(Axis axis, Entity entity, Vector relativeVelocity){
-		//Put the entities verticies into a nice, short-named set
+		/*	Initialize Variables:
+		 * 		put array verticies into a convenient set
+		 * 		create a unit vector for projection along the axis
+		 * 		create a vector for the first point of the entity (factoring in location)
+		 * 		create a float for the dot product of the current point
+		 * 		create the dot product for the velocity (handled later)
+		 * 		set up the min and max values for projection
+		 */
 		Float[] set = entity.verticies;
-		//Convert the axis into a unit vector for projection
 		Vector vect = axis.unitVector();
-		//Initialize an vector for the entities first verticie (taking into account it's location)
 		Vector entityVect = new Vector(PMath.sum(set[0],entity.location));
-		//set up float for the dot product of the current point being iterated over
 		float dotProduct = Vector.dotProduct(vect, entityVect);
-		//calculate the dot product of the relative velocity
 		float veloDotProduct = Vector.dotProduct(vect, relativeVelocity);
-		//set up the min and max values
 		float min = dotProduct;
 		float max = dotProduct;
 		//start looping through all the other points
