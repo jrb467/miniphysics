@@ -11,9 +11,9 @@ public class CollisionResult {
 	
 	public CollisionResult(){
 		willIntersect = false;
-		entityOneTranslation = new Vector(0,0);
-		entityTwoTranslation = new Vector(0,0);
-		entityOneVelocity = new Vector(0,0);
-		entityTwoVelocity = new Vector(0,0);
+		entityOneTranslation = new Vector(0,0,0);
+		entityTwoTranslation = new Vector(0,0,0);
+		entityOneVelocity = new Vector(0,0,0);
+		entityTwoVelocity = new Vector(0,0,0);
 	}
 }

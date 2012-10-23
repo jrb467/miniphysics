@@ -1,31 +1,24 @@
 package main;
 
-import java.awt.Color;
-import java.awt.Graphics;
-import java.awt.geom.Point2D.Float;
 import java.util.ArrayList;
 
 import entities.Entity;
 
 import math.Collision;
 import math.CollisionResult;
+import math.geometry.Float3D;
 import math.geometry.Vector;
-
-import graphic.RenderParameters;
 /**
  * The containing "world" for all the physics calculations and rendering.
  * 
  * @author jacob
  */
-public class World extends Thread{
+public class World{
 	public int width;
 	public int height;
 	public float gravity;
 	private float viscosity;
 	public ArrayList<Entity> entities;
-	private boolean running;
-	private boolean alive;
-	private RenderParameters render = null;
 	
 	public World(){
 		width = 0; //TODO change
@@ -33,24 +26,6 @@ public class World extends Thread{
 		gravity = 0;
 		viscosity = 0;
 		entities = new ArrayList<Entity>();
-	}
-	
-	public void start(){
-		alive = true;
-		running = true;
-		super.start();
-	}
-	
-	public void run(){
-		while(alive){
-			if(running){
-				//TODO calculate intersects then draw
-			}
-		}
-	}
-	
-	public void setRenderParameters(RenderParameters p){
-		render = p;
 	}
 	
 	public boolean setViscosity(float v){
@@ -83,18 +58,13 @@ public class World extends Thread{
 		}
 	}
 	
-	/*TODO what should happen
-	 *	velocity should be updated
-	 *	Collision detection should occur, be taken care of (including velocity & such)
-	 *	positions should be updated
-	 */
 	public void tick(){
 		synchronized(entities){
 			//TODO get rid of this prevs/news system. it should be all based on the collision results
-			Float[] prevs = new Float[entities.size()];
-			Float[] news = new Float[entities.size()];
+			Float3D[] prevs = new Float3D[entities.size()];
+			Float3D[] news = new Float3D[entities.size()];
 			for(int e = 0; e < entities.size(); e++){
-				prevs[e] = (Float)entities.get(e).location.clone();
+				prevs[e] = (Float3D)entities.get(e).location.clone();
 				news[e] = entities.get(e).location;
 				if(!entities.get(e).staticEntity){
 					entities.get(e).velocity.y += 3;
@@ -111,8 +81,10 @@ public class World extends Thread{
 						if(temp.willIntersect){
 							one.location.x += temp.entityOneTranslation.x;
 							one.location.y += temp.entityOneTranslation.y;
+							one.location.z += temp.entityOneTranslation.z;
 							two.location.x += temp.entityTwoTranslation.x;
 							two.location.y += temp.entityTwoTranslation.y;
+							two.location.z += temp.entityTwoTranslation.z;
 							one.tick();
 							two.tick();
 							one.velocity = temp.entityOneVelocity;
@@ -127,23 +99,7 @@ public class World extends Thread{
 			}
 			for(int i = 0; i < news.length; i++){
 				if(!entities.get(i).staticEntity)
-					entities.get(i).velocity = new Vector(news[i].x-prevs[i].x, news[i].y-prevs[i].y);
-			}
-		}
-	}
-	
-	public void draw(Graphics g, int x, int y){
-		if(render != null){
-			if(render.backgroundStyle == RenderParameters.SOLID_BACKGROUND){
-				g.setColor(render.backgroundColor);
-			}
-		}else{
-			g.setColor(Color.white);
-		}
-		g.fillRect(0, 0, x, y);
-		synchronized(entities){
-			for(Entity e: entities){
-				e.draw(g, render);
+					entities.get(i).velocity = new Vector(news[i].x-prevs[i].x, news[i].y-prevs[i].y, news[i].z-prevs[i].z);
 			}
 		}
 	}
